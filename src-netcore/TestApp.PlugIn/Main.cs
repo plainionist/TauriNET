@@ -12,7 +12,7 @@ class User
 public static class Main
 {
     [RouteMethod]
-    public static RouteResponse login(RouteRequest request, RouteResponse response)
+    public static RouteResponse Login(RouteRequest request, RouteResponse response)
     {
         User? loginInfo = null;
 

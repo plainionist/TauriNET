@@ -8,17 +8,17 @@ namespace TauriDotNetBridge;
 
 public class PluginManager
 {
-    private static PluginManager instance;
+    private static PluginManager myInstance;
 
-    private readonly PluginInfo[] plugins;
+    private readonly IReadOnlyCollection<PluginInfo> myPlugIns;
 
     private PluginManager()
     {
         AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => AssemblyDependency.AssemblyResolve(sender, args, Directory.GetCurrentDirectory());
-        this.plugins = this.loadPluginsRoutes().ToArray();
+        myPlugIns = LoadPlugInRoutes().ToArray();
     }
 
-    private List<PluginInfo> loadPluginsRoutes()
+    private List<PluginInfo> LoadPlugInRoutes()
     {
         var pluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "plugins");
 
@@ -63,7 +63,7 @@ public class PluginManager
         PluginInfo? foundPlugin = null;
         try
         {
-            foundPlugin = this.plugins.Where(x => x.PluginName == routeRequest.PlugIn || x.PluginName == $"{routeRequest.PlugIn}.plugin").First();
+            foundPlugin = this.myPlugIns.Where(x => x.PluginName == routeRequest.PlugIn || x.PluginName == $"{routeRequest.PlugIn}.plugin").First();
         }
         catch (InvalidOperationException)
         {
@@ -73,7 +73,9 @@ public class PluginManager
         MethodInfo? foundMethod;
         try
         {
-            foundMethod = foundPlugin.Methods.Where(m => m.Name == routeRequest.Method).First();
+            foundMethod = foundPlugin.Methods
+                .Where(m => m.Name.Equals(routeRequest.Method, StringComparison.OrdinalIgnoreCase))
+                .First();
         }
         catch (InvalidOperationException)
         {
@@ -105,7 +107,7 @@ public class PluginManager
         };
 
         if (requestText is null or "") return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Input is empty..." }, responseSettings);
-        if (instance == null) instance = new PluginManager();
+        if (myInstance == null) myInstance = new PluginManager();
 
         RouteRequest request;
 
@@ -128,7 +130,7 @@ public class PluginManager
 
         try
         {
-            RouteResponse response = instance.handleRoute(request);
+            RouteResponse response = myInstance.handleRoute(request);
             return JsonConvert.SerializeObject(response, responseSettings);
         }
         catch (Exception ex)
