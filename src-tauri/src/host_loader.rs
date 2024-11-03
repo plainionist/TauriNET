@@ -1,5 +1,6 @@
 use core::slice;
 use std::ffi::{c_char, CString};
+use std::env;
 
 use lazy_static::lazy_static;
 use netcorehost::{hostfxr::AssemblyDelegateLoader, nethost, pdcstr};
@@ -8,6 +9,11 @@ lazy_static! {
     static ref ASM: AssemblyDelegateLoader = {
         let hostfxr = nethost::load_hostfxr().unwrap();
 
+        let exe_path = env::current_exe().expect("Failed to get the executable path");
+        let exe_dir = exe_path.parent().expect("Failed to get the executable directory");
+
+        env::set_current_dir(&exe_dir).expect("Failed to set current directory");
+        
         let context = hostfxr
             .initialize_for_runtime_config(pdcstr!("TauriIPC.runtimeconfig.json"))
             .expect("Wops... Invalid runtime configuration");
