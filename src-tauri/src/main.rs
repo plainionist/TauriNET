@@ -9,8 +9,6 @@ fn plugin_request(data_str: &str) -> String {
 }
 
 fn main() {
-    dotnet_host::initialize();
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![plugin_request])
         .run(tauri::generate_context!())

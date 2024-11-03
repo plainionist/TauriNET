@@ -26,10 +26,6 @@ lazy_static! {
     };
 }
 
-pub fn initialize() -> &'static AssemblyDelegateLoader {
-    &ASM
-}
-
 unsafe extern "system" fn copy_to_c_string(ptr: *const u16, length: i32) -> *mut c_char {
     let wide_chars = unsafe { slice::from_raw_parts(ptr, length as usize) };
     let string = String::from_utf16_lossy(wide_chars);
@@ -41,7 +37,7 @@ unsafe extern "system" fn copy_to_c_string(ptr: *const u16, length: i32) -> *mut
 }
 
 pub fn exec_function(method_name: &str) -> String {
-    let instance = initialize();
+    let instance = &ASM;
 
     let set_copy_to_c_string = instance
         .get_function_with_unmanaged_callers_only::<fn(f: unsafe extern "system" fn(*const u16, i32) -> *mut c_char)>(
