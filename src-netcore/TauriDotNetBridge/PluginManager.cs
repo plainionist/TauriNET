@@ -48,26 +48,29 @@ public class PluginManager
 
     internal RouteResponse RouteRequest(RouteRequest routeRequest)
     {
-        RouteResponse preResponse = new RouteResponse() { Id = routeRequest.Id };
+        var preResponse = new RouteResponse();
 
         if (routeRequest == null) return preResponse.Error("Object RouteRequest is required");
-        if (routeRequest.Id == null) return preResponse.Error("String parameter id is required");
         if (routeRequest.PlugIn == null) return preResponse.Error("string parameter plugin is required");
         if (routeRequest.Method == null) return preResponse.Error("string parameter method is required");
 
         // Convert to object
-        if (routeRequest.Data.GetType().FullName == typeof(JObject).FullName) routeRequest.Data = ((JObject)routeRequest.Data).ToObject(typeof(object));
+        if (routeRequest.Data.GetType().FullName == typeof(JObject).FullName)
+        {
+            routeRequest.Data = ((JObject)routeRequest.Data).ToObject(typeof(object));
+        }
 
         PluginInfo? foundPlugin = null;
         try
         {
-            foundPlugin = this.myPlugIns.Where(x => x.PluginName == routeRequest.PlugIn || x.PluginName == $"{routeRequest.PlugIn}.plugin").First();
+            foundPlugin = myPlugIns.Where(x => x.PluginName == routeRequest.PlugIn || x.PluginName == $"{routeRequest.PlugIn}.plugin").First();
         }
         catch (InvalidOperationException)
         {
             Console.WriteLine($"[PluginManager] Plugin {routeRequest.PlugIn} not found...");
             return preResponse.Error($"Plugin {routeRequest.PlugIn} not found...");
         }
+
         MethodInfo? foundMethod;
         try
         {
@@ -133,7 +136,7 @@ public class PluginManager
         catch (Exception ex)
         {
             Console.WriteLine($"[PluginManager] Failed to process request. {ex.Message}");
-            return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = $"Failed to process request. {ex.Message}" }, responseSettings);
+            return JsonConvert.SerializeObject(new RouteResponse { ErrorMessage = $"Failed to process request. {ex.Message}" }, responseSettings);
         }
     }
 }
