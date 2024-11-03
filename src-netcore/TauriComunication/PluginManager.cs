@@ -77,7 +77,7 @@ namespace TauriCommunication {
         /// </summary>
         /// <param name="inputData"></param>
         /// <returns></returns>
-        public static string processRequest(string? inputData) {
+        public static string ProcessRequest(string? inputData) {
             if (inputData is null or "") return JsonConvert.SerializeObject(new RouteResponse() { error = "Input is empty..." });
             if (instance == null) instance = new PluginManager();
 
