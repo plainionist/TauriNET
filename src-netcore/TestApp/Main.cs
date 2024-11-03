@@ -38,6 +38,6 @@ public static class Main {
         if (!File.Exists(filePath)) File.Create(filePath).Close();
         File.WriteAllText(filePath, $"Last login: {loginInfo.user}");
 
-        return response.Ok($"Loged in {loginInfo.user}");
+        return response.Ok($"Logged in {loginInfo.user}");
     }
 }
