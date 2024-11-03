@@ -21,7 +21,7 @@ export class TauriLib {
   
   public static async invokePlugin<T>(data: Omit<PluginRequest, 'id'>): Promise<T | null> {
     let generatedRequest = {...data, id: this.generateID()};
-    let invokeResponse = await invoke('plugin_request', { dataStr: JSON.stringify(generatedRequest) }) as string
+    let invokeResponse = await invoke('plugin_request', { request: JSON.stringify(generatedRequest) }) as string
     let jsonResponse = JSON.parse(invokeResponse) as RouteResponse<T>
 
     if (jsonResponse.error) throw new Error(jsonResponse.error)

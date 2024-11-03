@@ -81,9 +81,6 @@ namespace TauriCommunication {
             if (inputData is null or "") return JsonConvert.SerializeObject(new RouteResponse() { error = "Input is empty..." });
             if (instance == null) instance = new PluginManager();
 
-			// If is init, avoid send process
-			if (inputData is "INIT") return JsonConvert.SerializeObject(new RouteResponse() { data = "OK!" });
-
             RouteRequest request;
 
 			try {

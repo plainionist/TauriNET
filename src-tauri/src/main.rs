@@ -4,8 +4,8 @@
 mod dotnet_host;
 
 #[tauri::command]
-fn plugin_request(data_str: &str) -> String {
-    dotnet_host::exec_function(data_str)
+fn plugin_request(request: &str) -> String {
+    dotnet_host::process_request(request)
 }
 
 fn main() {
