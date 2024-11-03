@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace TauriComunication.Route;
+﻿namespace TauriComunication.Route;
 
 public class RouteRequest {
     public string id;
