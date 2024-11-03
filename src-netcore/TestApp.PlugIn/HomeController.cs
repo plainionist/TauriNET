@@ -3,35 +3,21 @@ using TauriDotNetBridge.Contracts;
 
 namespace TestApp;
 
-class User
+public class LogInInfo
 {
-    public string user { get; set; }
-    public string pass { get; set; }
+    public string User { get; set; }
+    public string Password { get; set; }
 }
 
 public static class HomeController
 {
     [RouteMethod]
-    public static RouteResponse Login(RouteRequest request)
+    public static RouteResponse Login(LogInInfo loginInfo)
     {
-        User? loginInfo = null;
-
-        if (request.Data != null)
-        {
-            try
-            {
-                loginInfo = ((JObject)request.Data).ToObject<User>()!;
-            }
-            catch (Exception ex)
-            {
-                return RouteResponse.Error($"Failed to parse JSON User object: {ex.Message}");
-            }
-        }
-
         var currentPath = Directory.GetCurrentDirectory();
         var filePath = Path.Combine(currentPath, "Test.txt");
 
-        if (loginInfo == null || loginInfo.user == "" || loginInfo.user == null)
+        if (loginInfo == null || loginInfo.User == "" || loginInfo.User == null)
         {
             if (File.Exists(filePath))
             {
@@ -45,8 +31,8 @@ public static class HomeController
         }
 
         if (!File.Exists(filePath)) File.Create(filePath).Close();
-        File.WriteAllText(filePath, $"Last login: {loginInfo.user}");
+        File.WriteAllText(filePath, $"Last login: {loginInfo.User}");
 
-        return RouteResponse.Ok($"Logged in {loginInfo.user}");
+        return RouteResponse.Ok($"Logged in {loginInfo.User}");
     }
 }

@@ -10,6 +10,19 @@ public class PluginManager
 {
     private static Lazy<PluginManager> myInstance = new Lazy<PluginManager>(() => new PluginManager());
 
+    private static readonly JsonSerializerSettings myResponseSettings = new()
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver()
+    };
+
+    private static readonly JsonSerializerSettings myRequestSettings = new()
+    {
+        ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new DefaultNamingStrategy()
+        }
+    };
+
     private readonly IReadOnlyCollection<PluginInfo> myPlugIns;
 
     private PluginManager()
@@ -46,7 +59,38 @@ public class PluginManager
         return plugins;
     }
 
-    internal RouteResponse RouteRequest(RouteRequest routeRequest)
+    public static string ProcessRequest(string? requestText)
+    {
+        if (requestText is null or "")
+        {
+            return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Input is empty..." }, myResponseSettings);
+        }
+
+        RouteRequest request;
+        try
+        {
+            request = JsonConvert.DeserializeObject<RouteRequest>(requestText, myRequestSettings);
+        }
+        catch (Exception)
+        {
+            return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Failed to parse request JSON" }, myResponseSettings);
+        }
+
+        try
+        {
+            var response = myInstance.Value.RouteRequest(request);
+            return SerializeResponse(response);
+        }
+        catch (Exception ex)
+        {
+            return JsonConvert.SerializeObject(new RouteResponse { ErrorMessage = $"Failed to process request: {ex}" }, myResponseSettings);
+        }
+    }
+
+    private static string SerializeResponse(object obj) =>
+        JsonConvert.SerializeObject(obj, myResponseSettings);
+
+    private RouteResponse RouteRequest(RouteRequest routeRequest)
     {
         if (routeRequest == null) return RouteResponse.Error("Object RouteRequest is required");
         if (routeRequest.Controller == null) return RouteResponse.Error("string parameter plugin is required");
@@ -64,63 +108,18 @@ public class PluginManager
 
         if (foundMethod == null)
         {
-            Console.WriteLine($"No matching route found for '{routeRequest.Controller}/{routeRequest.Action}'");
             return RouteResponse.Error($"No matching route found for '{routeRequest.Controller}/{routeRequest.Action}'");
         }
 
         try
         {
-            return (RouteResponse?)foundMethod.Invoke(null, [routeRequest]);
+            var serializer = JsonSerializer.Create(myRequestSettings);
+            var arg = ((JObject)routeRequest.Data).ToObject(foundMethod.GetParameters().Single().ParameterType, serializer);
+            return (RouteResponse?)foundMethod.Invoke(null, [arg]);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[{routeRequest.Controller}][{routeRequest.Action}] error: {ex}");
-            return RouteResponse.Error($"{ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// This method handle all requests and redirect to any RouteHandler
-    /// </summary>
-    /// <param name="requestText"></param>
-    /// <returns></returns>
-    public static string ProcessRequest(string? requestText)
-    {
-        var responseSettings = new JsonSerializerSettings
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
-        };
-
-        if (requestText is null or "") return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Input is empty..." }, responseSettings);
-
-        RouteRequest request;
-
-        var requestSettings = new JsonSerializerSettings
-        {
-            ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new DefaultNamingStrategy()
-            }
-        };
-
-        try
-        {
-            request = JsonConvert.DeserializeObject<RouteRequest>(requestText, requestSettings);
-        }
-        catch (Exception)
-        {
-            return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Failed to parse request JSON" }, responseSettings);
-        }
-
-        try
-        {
-            var response = myInstance.Value.RouteRequest(request);
-            return JsonConvert.SerializeObject(response, responseSettings);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[PluginManager] Failed to process request. {ex.Message}");
-            return JsonConvert.SerializeObject(new RouteResponse { ErrorMessage = $"Failed to process request. {ex.Message}" }, responseSettings);
+            return RouteResponse.Error($"[{routeRequest.Controller}][{routeRequest.Action}] error: {ex}");
         }
     }
 }

@@ -7,7 +7,7 @@ export type PluginRequest = {
 }
 
 export type RouteResponse<T> = {
-  error?: string
+  errorMessage?: string
   data?: T
 }
 
@@ -16,7 +16,7 @@ export class TauriApi {
     let response = (await invoke('plugin_request', { request: JSON.stringify(request) })) as string
     let jsonResponse = JSON.parse(response) as RouteResponse<T>
 
-    if (jsonResponse.error) throw new Error(jsonResponse.error)
+    if (jsonResponse.errorMessage) throw new Error(jsonResponse.errorMessage)
 
     return jsonResponse.data ?? (null as T | null)
   }

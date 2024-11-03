@@ -27,7 +27,6 @@ public class PluginInfo
                     // Verify parameters
                     var ps = m.GetParameters();
                     if (ps.Length != 1) return false;
-                    if (ps[0].ParameterType.FullName != typeof(RouteRequest).FullName) return false;
 
                     // verify return
                     if (m.ReturnType.FullName != typeof(RouteResponse).FullName) return false;
