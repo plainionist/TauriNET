@@ -12,7 +12,7 @@ class User
 public static class Main
 {
     [RouteMethod]
-    public static RouteResponse Login(RouteRequest request, RouteResponse response)
+    public static RouteResponse Login(RouteRequest request)
     {
         User? loginInfo = null;
 
@@ -24,7 +24,7 @@ public static class Main
             }
             catch (Exception ex)
             {
-                return response.Error($"Failed to parse JSON User object: {ex.Message}");
+                return RouteResponse.Error($"Failed to parse JSON User object: {ex.Message}");
             }
         }
 
@@ -38,15 +38,15 @@ public static class Main
                 var txtLogin = File.ReadAllText(filePath);
                 var loginName = txtLogin.Substring("Last login: ".Length);
 
-                return response.Ok($"Welcome back, {loginName}");
+                return RouteResponse.Ok($"Welcome back, {loginName}");
             }
 
-            return response.Ok("Woops... User is not saved");
+            return RouteResponse.Ok("Woops... User is not saved");
         }
 
         if (!File.Exists(filePath)) File.Create(filePath).Close();
         File.WriteAllText(filePath, $"Last login: {loginInfo.user}");
 
-        return response.Ok($"Logged in {loginInfo.user}");
+        return RouteResponse.Ok($"Logged in {loginInfo.user}");
     }
 }

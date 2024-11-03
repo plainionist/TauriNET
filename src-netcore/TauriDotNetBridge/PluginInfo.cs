@@ -30,9 +30,8 @@ public class PluginInfo
 
                 // Verify parameters
                 ParameterInfo[] ps = m.GetParameters();
-                if (ps.Length != 1 && ps.Length != 2) return false;
+                if (ps.Length != 1) return false;
                 if (ps[0].ParameterType.FullName != typeof(RouteRequest).FullName) return false;
-                if (ps[1] != null && ps[1].ParameterType.FullName != typeof(RouteResponse).FullName) return false;
 
                 // verify return
                 if (m.ReturnType.FullName != typeof(RouteResponse).FullName) return false;

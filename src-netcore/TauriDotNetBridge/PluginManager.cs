@@ -39,7 +39,7 @@ public class PluginManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to load {Path.GetFileName(dllPath)}: {ex.Message}");
+                Console.WriteLine($"Failed to load {Path.GetFileName(dllPath)}: {ex}");
             }
         }
 
@@ -48,11 +48,9 @@ public class PluginManager
 
     internal RouteResponse RouteRequest(RouteRequest routeRequest)
     {
-        var preResponse = new RouteResponse();
-
-        if (routeRequest == null) return preResponse.Error("Object RouteRequest is required");
-        if (routeRequest.PlugIn == null) return preResponse.Error("string parameter plugin is required");
-        if (routeRequest.Method == null) return preResponse.Error("string parameter method is required");
+        if (routeRequest == null) return RouteResponse.Error("Object RouteRequest is required");
+        if (routeRequest.PlugIn == null) return RouteResponse.Error("string parameter plugin is required");
+        if (routeRequest.Method == null) return RouteResponse.Error("string parameter method is required");
 
         // Convert to object
         if (routeRequest.Data.GetType().FullName == typeof(JObject).FullName)
@@ -67,8 +65,8 @@ public class PluginManager
         }
         catch (InvalidOperationException)
         {
-            Console.WriteLine($"[PluginManager] Plugin {routeRequest.PlugIn} not found...");
-            return preResponse.Error($"Plugin {routeRequest.PlugIn} not found...");
+            Console.WriteLine($"[PluginManager] Plugin '{routeRequest.PlugIn}' not found...");
+            return RouteResponse.Error($"Plugin '{routeRequest.PlugIn}' not found...");
         }
 
         MethodInfo? foundMethod;
@@ -80,18 +78,18 @@ public class PluginManager
         }
         catch (InvalidOperationException)
         {
-            Console.WriteLine($"[{routeRequest.PlugIn}] Method {routeRequest.Method} not found...");
-            return preResponse.Error($"Method {routeRequest.Method} not found...");
+            Console.WriteLine($"[{routeRequest.PlugIn}] Method '{routeRequest.Method}' not found...");
+            return RouteResponse.Error($"Method '{routeRequest.Method}' not found...");
         }
 
         try
         {
-            return (RouteResponse?)foundMethod.Invoke(null, [routeRequest, preResponse]); ;
+            return (RouteResponse?)foundMethod.Invoke(null, [routeRequest]);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[{routeRequest.PlugIn}][{routeRequest.Method}] error: {ex.ToString()}");
-            return preResponse.Error($"{ex.Message}");
+            Console.WriteLine($"[{routeRequest.PlugIn}][{routeRequest.Method}] error: {ex}");
+            return RouteResponse.Error($"{ex.Message}");
         }
     }
 
