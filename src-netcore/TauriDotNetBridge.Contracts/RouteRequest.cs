@@ -1,9 +1,9 @@
-﻿namespace TauriCommunication.Route;
+﻿namespace TauriDotNetBridge.Contracts;
 
 public class RouteRequest
 {
-    public string id;
-    public string plugin;
-    public string method;
-    public object? data;
+    public string Id { get; set; }
+    public string PlugIn { get; set; }
+    public string Method { get; set; }
+    public object? Data { get; set; }
 }

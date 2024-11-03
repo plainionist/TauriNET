@@ -1,5 +1,5 @@
-﻿using TauriCommunication;
-using TauriCommunication.Route;
+﻿using Newtonsoft.Json.Linq;
+using TauriDotNetBridge.Contracts;
 
 namespace TestApp;
 
@@ -16,11 +16,11 @@ public static class Main
     {
         User? loginInfo = null;
 
-        if (request.data != null)
+        if (request.Data != null)
         {
             try
             {
-                loginInfo = Utils.ParseObject<User>(request.data);
+                loginInfo = ((JObject)request.Data).ToObject<User>()!;
             }
             catch (Exception ex)
             {

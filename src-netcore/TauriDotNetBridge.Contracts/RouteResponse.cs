@@ -1,22 +1,22 @@
-﻿namespace TauriCommunication.Route;
+﻿namespace TauriDotNetBridge.Contracts;
 
 public class RouteResponse
 {
-    public string id;
-    public string? error;
-    public object? data;
+    public string Id { get; set; }
+    public string? ErrorMessage { get; set; }
+    public object? Data { get; set; }
 
-    internal RouteResponse() { }
+    public RouteResponse() { }
 
     public RouteResponse Ok(object? data = null)
     {
-        this.data = data;
+        this.Data = data;
         return this;
     }
 
     public RouteResponse Error(string error)
     {
-        this.data = error;
+        Data = error;
         return this;
     }
 }
