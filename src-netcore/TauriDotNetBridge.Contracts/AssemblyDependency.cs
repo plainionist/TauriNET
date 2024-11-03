@@ -1,18 +1,24 @@
 ﻿using System.Reflection;
 
-namespace TauriCommunication {
-	public class AssemblyDependency {
+namespace TauriCommunication
+{
+	public class AssemblyDependency
+	{
 
-		public static Assembly? AssemblyResolve(object sender, ResolveEventArgs args, string pluginName) {
+		public static Assembly? AssemblyResolve(object sender, ResolveEventArgs args, string pluginName)
+		{
 			if (args.Name.StartsWith("System")) return null;
 
 			String DLLName = new AssemblyName(args.Name).Name + ".dll";
 
-			try {
+			try
+			{
 				var compatible = AppDomain.CurrentDomain.GetAssemblies().Where(asm => asm.FullName == args.Name).First();
 				Console.WriteLine($"Requested loaded ASM, returning {compatible.GetName()}");
 				return compatible;
-			} catch (Exception) {
+			}
+			catch (Exception)
+			{
 			}
 
 			string currentDirectory = Directory.GetCurrentDirectory();

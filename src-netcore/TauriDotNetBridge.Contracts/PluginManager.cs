@@ -3,21 +3,26 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using TauriCommunication.Route;
 
-namespace TauriCommunication {
-    public class PluginManager {
+namespace TauriCommunication
+{
+    public class PluginManager
+    {
         private static PluginManager instance;
 
         private readonly PluginInfo[] plugins;
 
-        private PluginManager() {
+        private PluginManager()
+        {
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => AssemblyDependency.AssemblyResolve(sender, args, Directory.GetCurrentDirectory());
-			this.plugins = this.loadPluginsRoutes().ToArray();
-		}
+            this.plugins = this.loadPluginsRoutes().ToArray();
+        }
 
-        private List<PluginInfo> loadPluginsRoutes() {
+        private List<PluginInfo> loadPluginsRoutes()
+        {
             var pluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "plugins");
 
-            if (!Directory.Exists(pluginsDirectory)) {
+            if (!Directory.Exists(pluginsDirectory))
+            {
                 Console.WriteLine("Plugins directory does not exist");
                 return [];
             }
@@ -27,10 +32,14 @@ namespace TauriCommunication {
             // Instance with list of nulls
             List<PluginInfo> plugins = new List<PluginInfo>();
 
-            foreach (var dllPath in dllList) {
-                try {
+            foreach (var dllPath in dllList)
+            {
+                try
+                {
                     plugins.Add(new PluginInfo(dllPath));
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     Console.WriteLine($"Failed to load {Path.GetFileName(dllPath)}: {ex.Message}");
                 }
             }
@@ -38,8 +47,9 @@ namespace TauriCommunication {
             return plugins;
         }
 
-        internal RouteResponse handleRoute(RouteRequest routeRequest) {
-			RouteResponse preResponse = new RouteResponse() { id = routeRequest.id };
+        internal RouteResponse handleRoute(RouteRequest routeRequest)
+        {
+            RouteResponse preResponse = new RouteResponse() { id = routeRequest.id };
 
             if (routeRequest == null) return preResponse.Error("Object RouteRequest is required");
             if (routeRequest.id == null) return preResponse.Error("String parameter id is required");
@@ -49,27 +59,36 @@ namespace TauriCommunication {
             // Convert to object
             if (routeRequest.data.GetType().FullName == typeof(JObject).FullName) routeRequest.data = ((JObject)routeRequest.data).ToObject(typeof(object));
 
-			PluginInfo? foundPlugin = null;
-			try {
-				foundPlugin = this.plugins.Where(x => x.PluginName == routeRequest.plugin || x.PluginName == $"{routeRequest.plugin}.plugin").First();
-			} catch (InvalidOperationException) {
+            PluginInfo? foundPlugin = null;
+            try
+            {
+                foundPlugin = this.plugins.Where(x => x.PluginName == routeRequest.plugin || x.PluginName == $"{routeRequest.plugin}.plugin").First();
+            }
+            catch (InvalidOperationException)
+            {
                 Console.WriteLine($"[PluginManager] Plugin {routeRequest.plugin} not found...");
                 return preResponse.Error($"Plugin {routeRequest.plugin} not found...");
             }
             MethodInfo? foundMethod;
-			try {
+            try
+            {
                 foundMethod = foundPlugin.methods.Where(m => m.Name == routeRequest.method).First();
-			} catch (InvalidOperationException) {
+            }
+            catch (InvalidOperationException)
+            {
                 Console.WriteLine($"[{routeRequest.plugin}] Method {routeRequest.method} not found...");
-				return preResponse.Error($"Method {routeRequest.method} not found...");
+                return preResponse.Error($"Method {routeRequest.method} not found...");
             }
 
-            try {
+            try
+            {
                 return (RouteResponse?)foundMethod.Invoke(null, [routeRequest, preResponse]); ;
-			} catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine($"[{routeRequest.plugin}][{routeRequest.method}] error: {ex.ToString()}");
                 return preResponse.Error($"{ex.Message}");
-			}
+            }
         }
 
         /// <summary>
@@ -77,25 +96,32 @@ namespace TauriCommunication {
         /// </summary>
         /// <param name="inputData"></param>
         /// <returns></returns>
-        public static string ProcessRequest(string? inputData) {
+        public static string ProcessRequest(string? inputData)
+        {
             if (inputData is null or "") return JsonConvert.SerializeObject(new RouteResponse() { error = "Input is empty..." });
             if (instance == null) instance = new PluginManager();
 
             RouteRequest request;
 
-			try {
-				request = JsonConvert.DeserializeObject<RouteRequest>(inputData);
-			} catch (Exception) {
+            try
+            {
+                request = JsonConvert.DeserializeObject<RouteRequest>(inputData);
+            }
+            catch (Exception)
+            {
                 return JsonConvert.SerializeObject(new RouteResponse() { error = "Failed to parse request JSON" });
-			}
+            }
 
-            try {
-				RouteResponse response = instance.handleRoute(request);
-				return JsonConvert.SerializeObject(response);
-			} catch (Exception ex) {
-				Console.WriteLine($"[PluginManager] Failed to process request. {ex.Message}");
-				return JsonConvert.SerializeObject(new RouteResponse() { error = $"Failed to process request. {ex.Message}" });
-			}
+            try
+            {
+                RouteResponse response = instance.handleRoute(request);
+                return JsonConvert.SerializeObject(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PluginManager] Failed to process request. {ex.Message}");
+                return JsonConvert.SerializeObject(new RouteResponse() { error = $"Failed to process request. {ex.Message}" });
+            }
         }
     }
 }

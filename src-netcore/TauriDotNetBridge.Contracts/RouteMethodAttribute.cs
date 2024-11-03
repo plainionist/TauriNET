@@ -8,12 +8,14 @@
 /// public static <see cref="RouteResponse"/> methodName(<see cref="RouteRequest"/> route)
 /// </code>
 /// </summary>
-public class RouteMethodAttribute : Attribute {
-	public string? methodName {  get; }
+public class RouteMethodAttribute : Attribute
+{
+	public string? methodName { get; }
 
-	public RouteMethodAttribute(string methodName) {
+	public RouteMethodAttribute(string methodName)
+	{
 		this.methodName = methodName;
 	}
 
-	public RouteMethodAttribute() {}
+	public RouteMethodAttribute() { }
 }

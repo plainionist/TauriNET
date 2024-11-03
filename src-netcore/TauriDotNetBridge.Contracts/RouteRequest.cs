@@ -1,6 +1,7 @@
 ﻿namespace TauriCommunication.Route;
 
-public class RouteRequest {
+public class RouteRequest
+{
     public string id;
     public string plugin;
     public string method;

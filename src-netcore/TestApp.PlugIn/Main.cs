@@ -3,20 +3,27 @@ using TauriCommunication.Route;
 
 namespace TestApp;
 
-class User {
+class User
+{
     public string user { get; set; }
     public string pass { get; set; }
 }
 
-public static class Main {
+public static class Main
+{
     [RouteMethod]
-    public static RouteResponse login(RouteRequest request, RouteResponse response) {
+    public static RouteResponse login(RouteRequest request, RouteResponse response)
+    {
         User? loginInfo = null;
 
-        if (request.data != null) {
-            try {
+        if (request.data != null)
+        {
+            try
+            {
                 loginInfo = Utils.ParseObject<User>(request.data);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return response.Error($"Failed to parse JSON User object: {ex.Message}");
             }
         }
@@ -24,8 +31,10 @@ public static class Main {
         var currentPath = Directory.GetCurrentDirectory();
         var filePath = Path.Combine(currentPath, "Test.txt");
 
-        if (loginInfo == null || loginInfo.user == "" || loginInfo.user == null) {
-            if (File.Exists(filePath)) {
+        if (loginInfo == null || loginInfo.user == "" || loginInfo.user == null)
+        {
+            if (File.Exists(filePath))
+            {
                 var txtLogin = File.ReadAllText(filePath);
                 var loginName = txtLogin.Substring("Last login: ".Length);
 
