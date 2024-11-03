@@ -5,17 +5,17 @@ namespace TauriDotNetBridge;
 
 public class PluginInfo
 {
-    public List<MethodInfo> Methods { get; private set; } = new List<MethodInfo>();
-    public string PluginName { get; private set; }
+    private readonly List<MethodInfo> myActions = new();
 
     public PluginInfo(string dllPath)
     {
         var assembly = AppDomain.CurrentDomain.Load(LoadFile(dllPath));
-        PluginName = assembly.GetName().Name;
+        var plugInName = assembly.GetName().Name;
 
-        AppDomain.CurrentDomain.AssemblyResolve += (object? sender, ResolveEventArgs args) => AssemblyDependency.AssemblyResolve(sender, args, this.PluginName);
+        AppDomain.CurrentDomain.AssemblyResolve += (object? sender, ResolveEventArgs args) =>
+            AssemblyDependency.AssemblyResolve(sender, args, plugInName);
 
-        Console.WriteLine($"Loaded: {Path.GetFileNameWithoutExtension(dllPath)}, Name: {PluginName}");
+        Console.WriteLine($"Loaded: {Path.GetFileNameWithoutExtension(dllPath)}, Name: {plugInName}");
 
         foreach (var type in assembly.GetTypes())
         {
@@ -41,7 +41,7 @@ public class PluginInfo
                 Console.WriteLine($"RouteMethod found: {method.GetType().Name}: {method.Name}");
             }
 
-            Methods.AddRange(compatibleMethods);
+            myActions.AddRange(compatibleMethods);
         }
     }
 
@@ -54,4 +54,10 @@ public class PluginInfo
 
         return buffer;
     }
+
+    public MethodInfo? TryGetAction(string controller, string action) =>
+        myActions.FirstOrDefault(m =>
+            (m.DeclaringType.Name.Equals(controller, StringComparison.OrdinalIgnoreCase)
+                || m.DeclaringType.Name.Equals(controller + "Controller", StringComparison.OrdinalIgnoreCase))
+            && m.Name.Equals(action, StringComparison.OrdinalIgnoreCase));
 }

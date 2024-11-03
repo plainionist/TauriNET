@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using TauriDotNetBridge.Contracts;
 
 namespace TestApp;
@@ -9,7 +9,7 @@ class User
     public string pass { get; set; }
 }
 
-public static class Main
+public static class HomeController
 {
     [RouteMethod]
     public static RouteResponse Login(RouteRequest request)

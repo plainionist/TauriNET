@@ -2,7 +2,7 @@
 
 public class RouteRequest
 {
-    public string PlugIn { get; set; }
-    public string Method { get; set; }
+    public string Controller { get; set; }
+    public string Action { get; set; }
     public object? Data { get; set; }
 }

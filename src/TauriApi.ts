@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api'
 
 export type PluginRequest = {
-  plugin: string
-  method: string
+  controller: string
+  action: string
   data?: object
 }
 

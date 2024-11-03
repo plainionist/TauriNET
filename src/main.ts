@@ -7,7 +7,7 @@ async function login(user: string): Promise<string | null> {
   let userData = { user: user, pass: 'Hmm...' }
 
   try {
-    return await TauriApi.invokePlugin<string>({ plugin: 'TestApp.PlugIn', method: 'login', data: userData })
+    return await TauriApi.invokePlugin<string>({ controller: 'home', action: 'login', data: userData })
   } catch (error) {
     return 'ERR: ' + error
   }

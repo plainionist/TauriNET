@@ -49,8 +49,8 @@ public class PluginManager
     internal RouteResponse RouteRequest(RouteRequest routeRequest)
     {
         if (routeRequest == null) return RouteResponse.Error("Object RouteRequest is required");
-        if (routeRequest.PlugIn == null) return RouteResponse.Error("string parameter plugin is required");
-        if (routeRequest.Method == null) return RouteResponse.Error("string parameter method is required");
+        if (routeRequest.Controller == null) return RouteResponse.Error("string parameter plugin is required");
+        if (routeRequest.Action == null) return RouteResponse.Error("string parameter method is required");
 
         // Convert to object
         if (routeRequest.Data.GetType().FullName == typeof(JObject).FullName)
@@ -58,28 +58,14 @@ public class PluginManager
             routeRequest.Data = ((JObject)routeRequest.Data).ToObject(typeof(object));
         }
 
-        PluginInfo? foundPlugin = null;
-        try
-        {
-            foundPlugin = myPlugIns.Where(x => x.PluginName == routeRequest.PlugIn || x.PluginName == $"{routeRequest.PlugIn}.plugin").First();
-        }
-        catch (InvalidOperationException)
-        {
-            Console.WriteLine($"[PluginManager] Plugin '{routeRequest.PlugIn}' not found...");
-            return RouteResponse.Error($"Plugin '{routeRequest.PlugIn}' not found...");
-        }
+        var foundMethod = myPlugIns
+            .Select(p => p.TryGetAction(routeRequest.Controller, routeRequest.Action))
+            .FirstOrDefault(m => m != null);
 
-        MethodInfo? foundMethod;
-        try
+        if (foundMethod == null)
         {
-            foundMethod = foundPlugin.Methods
-                .Where(m => m.Name.Equals(routeRequest.Method, StringComparison.OrdinalIgnoreCase))
-                .First();
-        }
-        catch (InvalidOperationException)
-        {
-            Console.WriteLine($"[{routeRequest.PlugIn}] Method '{routeRequest.Method}' not found...");
-            return RouteResponse.Error($"Method '{routeRequest.Method}' not found...");
+            Console.WriteLine($"No matching route found for '{routeRequest.Controller}/{routeRequest.Action}'");
+            return RouteResponse.Error($"No matching route found for '{routeRequest.Controller}/{routeRequest.Action}'");
         }
 
         try
@@ -88,7 +74,7 @@ public class PluginManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[{routeRequest.PlugIn}][{routeRequest.Method}] error: {ex}");
+            Console.WriteLine($"[{routeRequest.Controller}][{routeRequest.Action}] error: {ex}");
             return RouteResponse.Error($"{ex.Message}");
         }
     }
