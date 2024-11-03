@@ -8,7 +8,7 @@ namespace TauriDotNetBridge;
 
 public class PluginManager
 {
-    private static PluginManager myInstance;
+    private static Lazy<PluginManager> myInstance = new Lazy<PluginManager>(() => new PluginManager());
 
     private readonly IReadOnlyCollection<PluginInfo> myPlugIns;
 
@@ -28,12 +28,10 @@ public class PluginManager
             return [];
         }
 
-        string[] dllList = Directory.GetFiles(pluginsDirectory, "*.plugin.dll");
+        var assemblies = Directory.GetFiles(pluginsDirectory, "*.plugin.dll");
 
-        // Instance with list of nulls
-        List<PluginInfo> plugins = new List<PluginInfo>();
-
-        foreach (var dllPath in dllList)
+        var plugins = new List<PluginInfo>();
+        foreach (var dllPath in assemblies)
         {
             try
             {
@@ -48,7 +46,7 @@ public class PluginManager
         return plugins;
     }
 
-    internal RouteResponse handleRoute(RouteRequest routeRequest)
+    internal RouteResponse RouteRequest(RouteRequest routeRequest)
     {
         RouteResponse preResponse = new RouteResponse() { Id = routeRequest.Id };
 
@@ -107,7 +105,6 @@ public class PluginManager
         };
 
         if (requestText is null or "") return JsonConvert.SerializeObject(new RouteResponse() { ErrorMessage = "Input is empty..." }, responseSettings);
-        if (myInstance == null) myInstance = new PluginManager();
 
         RouteRequest request;
 
@@ -130,7 +127,7 @@ public class PluginManager
 
         try
         {
-            RouteResponse response = myInstance.handleRoute(request);
+            var response = myInstance.Value.RouteRequest(request);
             return JsonConvert.SerializeObject(response, responseSettings);
         }
         catch (Exception ex)
