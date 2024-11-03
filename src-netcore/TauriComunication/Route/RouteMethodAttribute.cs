@@ -1,4 +1,4 @@
-﻿namespace TauriComunication.Route;
+﻿namespace TauriCommunication.Route;
 
 /// <summary>
 /// This atribute specifies entrypoint of any Route handler. This is searched by reflexion

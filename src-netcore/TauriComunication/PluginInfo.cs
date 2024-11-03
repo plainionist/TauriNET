@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using TauriComunication.Route;
+using TauriCommunication.Route;
 
-namespace TauriComunication {
+namespace TauriCommunication {
     public class PluginInfo {
         public string dllPath { get; private set; }
         public Assembly assembly { get; private set; }

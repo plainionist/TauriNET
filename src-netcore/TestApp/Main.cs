@@ -1,5 +1,5 @@
-﻿using TauriComunication;
-using TauriComunication.Route;
+﻿using TauriCommunication;
+using TauriCommunication.Route;
 
 namespace TestApp;
 

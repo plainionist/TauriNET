@@ -1,4 +1,4 @@
-﻿namespace TauriComunication.Route;
+﻿namespace TauriCommunication.Route;
 
 public class RouteResponse {
     public string id;

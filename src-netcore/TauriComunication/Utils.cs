@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace TauriComunication {
+namespace TauriCommunication {
 	public class Utils {
 		public static T ParseObject<T>(object data) {
 			if (data == null) throw new ArgumentNullException("parameter data is null");

@@ -1,30 +1,32 @@
 use core::slice;
-use std::ffi::{c_char, CString};
 use std::env;
+use std::ffi::{c_char, CString};
 
 use lazy_static::lazy_static;
 use netcorehost::{hostfxr::AssemblyDelegateLoader, nethost, pdcstr};
 
 lazy_static! {
-    static ref ASM: AssemblyDelegateLoader = {
+    static ref ASM:AssemblyDelegateLoader = {
         let hostfxr = nethost::load_hostfxr().unwrap();
 
         let exe_path = env::current_exe().expect("Failed to get the executable path");
-        let exe_dir = exe_path.parent().expect("Failed to get the executable directory");
+        let exe_dir = exe_path
+            .parent()
+            .expect("Failed to get the executable directory");
 
         env::set_current_dir(&exe_dir).expect("Failed to set current directory");
-        
+
         let context = hostfxr
             .initialize_for_runtime_config(pdcstr!("TauriIPC.runtimeconfig.json"))
-            .expect("Wops... Invalid runtime configuration");
+            .expect("Invalid runtime configuration");
 
         context
             .get_delegate_loader_for_assembly(pdcstr!("TauriIPC.dll"))
-            .expect("Wops... Failed to load DLL")
+            .expect("Failed to load DLL")
     };
 }
 
-pub fn get_instance() -> &'static AssemblyDelegateLoader {
+pub fn initialize() -> &'static AssemblyDelegateLoader {
     &ASM
 }
 
@@ -38,12 +40,12 @@ unsafe extern "system" fn copy_to_c_string(ptr: *const u16, length: i32) -> *mut
     c_string.into_raw()
 }
 
-pub fn run_method_utf8(string_data: &str) -> String {
-    let instance = get_instance();
+pub fn exec_function(method_name: &str) -> String {
+    let instance = initialize();
 
     let set_copy_to_c_string = instance
         .get_function_with_unmanaged_callers_only::<fn(f: unsafe extern "system" fn(*const u16, i32) -> *mut c_char)>(
-            pdcstr!("TauriIPC.CString, TauriIPC"),
+            pdcstr!("TauriIPC.Bridge, TauriIPC"),
             pdcstr!("SetCopyToCStringFunctionPtr"),
         ).unwrap();
 
@@ -51,12 +53,12 @@ pub fn run_method_utf8(string_data: &str) -> String {
 
     let handler_utf8 = instance
         .get_function_with_unmanaged_callers_only::<fn(text_ptr: *const u8, text_length: i32) -> *mut c_char>(
-            pdcstr!("TauriIPC.CString, TauriIPC"),
-            pdcstr!("runUTF8"),
+            pdcstr!("TauriIPC.Bridge, TauriIPC"),
+            pdcstr!("process_request"),
         )
         .unwrap();
 
-    let ptr_string = handler_utf8(string_data.as_ptr(), string_data.len() as i32);
+    let ptr_string = handler_utf8(method_name.as_ptr(), method_name.len() as i32);
     let data = unsafe { CString::from_raw(ptr_string) };
 
     format!("{}", data.to_string_lossy())

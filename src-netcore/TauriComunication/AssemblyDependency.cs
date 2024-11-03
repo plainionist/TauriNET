@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace TauriComunication {
+namespace TauriCommunication {
 	public class AssemblyDependency {
 
 		public static Assembly? AssemblyResolve(object sender, ResolveEventArgs args, string pluginName) {

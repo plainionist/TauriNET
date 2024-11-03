@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
-using TauriComunication.Route;
+using TauriCommunication.Route;
 
-namespace TauriComunication {
+namespace TauriCommunication {
     public class PluginManager {
         private static PluginManager instance;
 
