@@ -108,6 +108,15 @@ public static class Main {
 
 Latest working build example: [Download](https://github.com/RubenPX/TauriNET/releases/download/0.1.4/TauriNET_example.zip)
 
+## Run from sources
+
+From the root of the project run
+
+```
+build.cmd
+pnpm run tauri dev
+```
+
 ## References
 - [.NET](https://learn.microsoft.com/dotnet/core/introduction)
 - [RustLang](https://www.rust-lang.org/es)
