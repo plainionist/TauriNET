@@ -3563,9 +3563,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-dotnet-bridge-host"
-version = "0.1.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f40d59fae3e3233e5cd1b2e9d04dc1df06bbc04e63044a260ce50e3c5cbfa7cb"
+checksum = "2222f0508ba98b45a389ddc5351b1df409c7a51bdb20d1e8c7b7b212ed33fc91"
 dependencies = [
  "lazy_static",
  "netcorehost",

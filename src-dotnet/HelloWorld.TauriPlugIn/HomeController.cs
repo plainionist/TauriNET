@@ -18,25 +18,16 @@ public class HomeController
         var currentPath = Directory.GetCurrentDirectory();
         var filePath = Path.Combine(currentPath, "Test.txt");
 
-        if (!string.IsNullOrEmpty(loginInfo.User))
+        if (File.Exists(filePath))
         {
-            if (File.Exists(filePath))
+            var txtLogin = File.ReadAllText(filePath);
+            if (txtLogin.Equals(loginInfo.User, StringComparison.OrdinalIgnoreCase))
             {
-                var txtLogin = File.ReadAllText(filePath);
-                var loginName = txtLogin.Substring("Last login: ".Length);
-
-                return RouteResponse.Ok($"Welcome back, {loginName} - Login count: {++myCounter}");
+                return RouteResponse.Ok($"Welcome back, {loginInfo.User} - Login count: {++myCounter}");
             }
-
-            return RouteResponse.Ok("Woops... User is not saved");
         }
 
-        if (!File.Exists(filePath))
-        {
-            File.Create(filePath).Close();
-        }
-        
-        File.WriteAllText(filePath, $"Last login: {loginInfo.User}");
+        File.WriteAllText(filePath, loginInfo.User);
 
         return RouteResponse.Ok($"Logged in {loginInfo.User} - Login count: {++myCounter}");
     }
