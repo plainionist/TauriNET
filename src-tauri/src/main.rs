@@ -1,11 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod dotnet_host;
+use tauri_dotnet_bridge_host;
 
 #[tauri::command]
 fn dotnet_request(request: &str) -> String {
-    dotnet_host::process_request(request)
+    tauri_dotnet_bridge_host::process_request(request)
 }
 
 fn main() {
