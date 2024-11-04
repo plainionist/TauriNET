@@ -1,6 +1,6 @@
 using TauriDotNetBridge.Contracts;
 
-namespace TestApp.PlugIn;
+namespace TauriApp.PlugIn;
 
 public class LogInInfo
 {

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using TauriDotNetBridge.Contracts;
 
-namespace TestApp.PlugIn;
+namespace TauriApp.PlugIn;
 
 public class PlugIn : IPlugIn
 {

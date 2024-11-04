@@ -4,13 +4,13 @@
 mod dotnet_host;
 
 #[tauri::command]
-fn plugin_request(request: &str) -> String {
+fn dotnet_request(request: &str) -> String {
     dotnet_host::process_request(request)
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![plugin_request])
+        .invoke_handler(tauri::generate_handler![dotnet_request])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

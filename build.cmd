@@ -1,5 +1,5 @@
 
-cd src-netcore
+cd src-dotnet
 dotnet build
 cd ..
 
