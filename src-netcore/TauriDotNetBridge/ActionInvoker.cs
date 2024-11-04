@@ -11,7 +11,7 @@ public class ActionInvoker
     private readonly IServiceCollection myServices;
     private readonly IServiceProvider myServiceProvider;
     private readonly JsonSerializer mySerializer;
-    
+
     public ActionInvoker(IServiceCollection services, JsonSerializerSettings settings)
     {
         myServices = services;
@@ -20,7 +20,7 @@ public class ActionInvoker
         mySerializer = JsonSerializer.Create(settings);
     }
 
-    public RouteResponse? InvokeAction(string controller, string action, object data)
+    public RouteResponse? InvokeAction(string controller, string action, object? data)
     {
         var type = myServices.FirstOrDefault(x =>
             (x.ImplementationType?.Name.Equals(controller, StringComparison.OrdinalIgnoreCase) == true ||
@@ -52,7 +52,14 @@ public class ActionInvoker
             return null;
         }
 
-        var arg = ((JObject)data).ToObject(method.GetParameters().Single().ParameterType, mySerializer);
-        return (RouteResponse?)method.Invoke(instance, [arg]);
+        if (data is null)
+        {
+            return (RouteResponse?)method.Invoke(instance, null);
+        }
+        else
+        {
+            var arg = ((JObject)data).ToObject(method.GetParameters().Single().ParameterType, mySerializer);
+            return (RouteResponse?)method.Invoke(instance, [arg]);
+        }
     }
 }

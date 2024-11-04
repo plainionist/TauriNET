@@ -14,7 +14,7 @@ public static class Bridge
 			request = null;
 		}
 
-		var response = PluginManager.ProcessRequest(request);
+		var response = Router.RouteRequest(request);
 
 		var responseBytes = Encoding.UTF8.GetBytes(response);
 		var responsePtr = Marshal.AllocHGlobal(responseBytes.Length + 1);

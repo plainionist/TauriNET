@@ -1,12 +1,11 @@
-using Newtonsoft.Json.Linq;
 using TauriDotNetBridge.Contracts;
 
-namespace TestApp;
+namespace TestApp.PlugIn;
 
 public class LogInInfo
 {
-    public string User { get; set; }
-    public string Password { get; set; }
+    public string? User { get; set; }
+    public string? Password { get; set; }
 }
 
 public class HomeController
@@ -19,20 +18,24 @@ public class HomeController
         var currentPath = Directory.GetCurrentDirectory();
         var filePath = Path.Combine(currentPath, "Test.txt");
 
-        if (loginInfo == null || loginInfo.User == "" || loginInfo.User == null)
+        if (!string.IsNullOrEmpty(loginInfo.User))
         {
             if (File.Exists(filePath))
             {
                 var txtLogin = File.ReadAllText(filePath);
                 var loginName = txtLogin.Substring("Last login: ".Length);
 
-                return RouteResponse.Ok($"Welcome back, {loginName}");
+                return RouteResponse.Ok($"Welcome back, {loginName} - Login count: {++myCounter}");
             }
 
             return RouteResponse.Ok("Woops... User is not saved");
         }
 
-        if (!File.Exists(filePath)) File.Create(filePath).Close();
+        if (!File.Exists(filePath))
+        {
+            File.Create(filePath).Close();
+        }
+        
         File.WriteAllText(filePath, $"Last login: {loginInfo.User}");
 
         return RouteResponse.Ok($"Logged in {loginInfo.User} - Login count: {++myCounter}");
