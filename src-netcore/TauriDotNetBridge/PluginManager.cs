@@ -1,7 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System.Reflection;
 using TauriDotNetBridge.Contracts;
 
 namespace TauriDotNetBridge;
@@ -23,40 +23,67 @@ public class PluginManager
         }
     };
 
-    private readonly IReadOnlyCollection<PluginInfo> myPlugIns;
+    private readonly ActionInvoker myActionInvoker;
 
     private PluginManager()
     {
         AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => AssemblyDependency.AssemblyResolve(sender, args, Directory.GetCurrentDirectory());
-        myPlugIns = LoadPlugInRoutes().ToArray();
+
+        var services = new ServiceCollection();
+        LoadPlugInRoutes(services);
+        myActionInvoker = new ActionInvoker(services, myRequestSettings);
     }
 
-    private List<PluginInfo> LoadPlugInRoutes()
+    private void LoadPlugInRoutes(ServiceCollection services)
     {
         var pluginsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "plugins");
 
         if (!Directory.Exists(pluginsDirectory))
         {
             Console.WriteLine("Plugins directory does not exist");
-            return [];
+            return;
         }
 
         var assemblies = Directory.GetFiles(pluginsDirectory, "*.plugin.dll");
 
-        var plugins = new List<PluginInfo>();
         foreach (var dllPath in assemblies)
         {
             try
             {
-                plugins.Add(new PluginInfo(dllPath));
+                var assembly = AppDomain.CurrentDomain.Load(LoadFile(dllPath));
+                var plugInName = assembly.GetName().Name;
+
+                AppDomain.CurrentDomain.AssemblyResolve += (object? sender, ResolveEventArgs args) =>
+                    AssemblyDependency.AssemblyResolve(sender, args, plugInName);
+
+                Console.WriteLine($"Loading '{Path.GetFileNameWithoutExtension(dllPath)}' ... ");
+
+                foreach (var type in assembly.GetTypes().Where(x => typeof(IPlugIn).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract))
+                {
+                    var instance = (IPlugIn)Activator.CreateInstance(type)!;
+
+                    Console.WriteLine($"  Initializing '{type}' ... ");
+
+                    instance.Initialize(services);
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to load {Path.GetFileName(dllPath)}: {ex}");
             }
-        }
 
-        return plugins;
+            // TODO: unregister AssemblyResolve
+        }
+    }
+
+    private static byte[] LoadFile(string filename)
+    {
+        using var fs = new FileStream(filename, FileMode.Open);
+        byte[] buffer = new byte[(int)fs.Length];
+        fs.Read(buffer, 0, buffer.Length);
+        fs.Close();
+
+        return buffer;
     }
 
     public static string ProcessRequest(string? requestText)
@@ -102,20 +129,9 @@ public class PluginManager
             routeRequest.Data = ((JObject)routeRequest.Data).ToObject(typeof(object));
         }
 
-        var foundMethod = myPlugIns
-            .Select(p => p.TryGetAction(routeRequest.Controller, routeRequest.Action))
-            .FirstOrDefault(m => m != null);
-
-        if (foundMethod == null)
-        {
-            return RouteResponse.Error($"No matching route found for '{routeRequest.Controller}/{routeRequest.Action}'");
-        }
-
         try
         {
-            var serializer = JsonSerializer.Create(myRequestSettings);
-            var arg = ((JObject)routeRequest.Data).ToObject(foundMethod.GetParameters().Single().ParameterType, serializer);
-            return (RouteResponse?)foundMethod.Invoke(null, [arg]);
+            return myActionInvoker.InvokeAction(routeRequest.Controller, routeRequest.Action, routeRequest.Data);
         }
         catch (Exception ex)
         {

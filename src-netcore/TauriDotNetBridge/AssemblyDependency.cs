@@ -4,7 +4,6 @@ namespace TauriDotNetBridge;
 
 public class AssemblyDependency
 {
-
 	public static Assembly? AssemblyResolve(object sender, ResolveEventArgs args, string pluginName)
 	{
 		if (args.Name.StartsWith("System")) return null;

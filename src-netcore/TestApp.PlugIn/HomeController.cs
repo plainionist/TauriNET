@@ -9,10 +9,12 @@ public class LogInInfo
     public string Password { get; set; }
 }
 
-public static class HomeController
+public class HomeController
 {
+    private int myCounter = 0;
+
     [RouteMethod]
-    public static RouteResponse Login(LogInInfo loginInfo)
+    public RouteResponse Login(LogInInfo loginInfo)
     {
         var currentPath = Directory.GetCurrentDirectory();
         var filePath = Path.Combine(currentPath, "Test.txt");
@@ -33,6 +35,6 @@ public static class HomeController
         if (!File.Exists(filePath)) File.Create(filePath).Close();
         File.WriteAllText(filePath, $"Last login: {loginInfo.User}");
 
-        return RouteResponse.Ok($"Logged in {loginInfo.User}");
+        return RouteResponse.Ok($"Logged in {loginInfo.User} - Login count: {++myCounter}");
     }
 }
